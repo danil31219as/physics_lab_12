@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Визуализация интерференционной картины колец
+        Ньютона</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #282c34;
+            color: #61dafb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        canvas {
+            border: 2px solid #61dafb;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #20232a;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .controls label {
+            margin: 10px;
+            font-size: 1.2em;
+            color: #61dafb;
+        }
+        .controls input {
+            margin-left: 10px;
+            padding: 5px;
+            font-size: 1em;
+            border: 1px solid #61dafb;
+            border-radius: 5px;
+            background-color: #282c34;
+            color: #61dafb;
+        }
+        .controls input[type="number"] {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+<h1>Визуализация интерференционной картины колец Ньютона</h1>
+<div class="controls">
+    <label>
+        Радиус линзы (м):
+        <input type="number" id="lensRadius" value="0.1" step="0.01">
+    </label>
+    <label>
+        Показатель преломления линзы:
+        <input type="number" id="nLens" value="1.5" step="0.01">
+    </label>
+    <label>
+        Показатель преломления среды:
+        <input type="number" id="nEnv" value="1" step="0.01">
+    </label>
+    <label>
+        Показатель преломления пластины:
+        <input type="number" id="nPlate" value="2.5" step="0.01">
+    </label>
+    <label>
+        Длина волны (нм):
+        <input type="number" id="wavelength" value="550" step="1">
+    </label>
+</div>
+<canvas id="canvas" width="800" height="800"></canvas>
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawNewtonRings() {
+        const lensRadius = parseFloat(document.getElementById('lensRadius').value);
+        const nLens = parseFloat(document.getElementById('nLens').value);
+        const nEnv = parseFloat(document.getElementById('nEnv').value);
+        const nPlate = parseFloat(document.getElementById('nPlate').value);
+        const wavelength = parseFloat(document.getElementById('wavelength').value) * 1e-9;
+        if (nPlate > nLens) {
+            const R = lensRadius / (nPlate - nLens);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let n = 0; n < 50; n++) {
+                const radiusDark = Math.sqrt(n * wavelength / nEnv * R) * 1e6;
+                const radiusBright = Math.sqrt((n + 0.5) * wavelength / nEnv * R) * 1e6;
+
+                const gradient = ctx.createRadialGradient(centerX, centerY, radiusDark, centerX, centerY, radiusBright);
+                gradient.addColorStop(0, `hsl(${(n * 10) % 360}, 100%, 50%)`);
+                gradient.addColorStop(1, `hsl(${((n + 1) * 10) % 360}, 100%, 50%)`);
+
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radiusDark, 0, 2 * Math.PI);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radiusBright, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+        }
+    }
+
+    document.getElementById('lensRadius').addEventListener('input', drawNewtonRings);
+    document.getElementById('nLens').addEventListener('input', drawNewtonRings);
+    document.getElementById('nEnv').addEventListener('input', drawNewtonRings);
+    document.getElementById('nPlate').addEventListener('input', drawNewtonRings);
+    document.getElementById('wavelength').addEventListener('input', drawNewtonRings);
+
+    drawNewtonRings();
+</script>
+</body>
+</html>
